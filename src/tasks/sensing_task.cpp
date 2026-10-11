@@ -1,6 +1,7 @@
 #include "sensors/sensor_manager.h"
 #include "types.h"
 #include <Arduino.h>
+#include "config.h"
 
 extern QueueHandle_t rawQueue;
 
@@ -15,6 +16,6 @@ void sensingTask(void* arg) {
             Serial.println("sensing: rawQueue full");
         }
 
-        vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(2000));
+        vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(SAMPLE_PERIOD_MS));
     }
 }

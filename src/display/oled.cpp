@@ -47,29 +47,29 @@ void oledShowReading(const SensorReading& r) {
     // do_unit
     display.setCursor(86, 24);
     display.print("mg/L");
-    // bar_temp_level
-    display.setCursor(5, 36);
-    display.print("temp:");
+        // bar_temp_level
+    display.setCursor(21, 36);
+    display.print("air:");
     // bar_temp_value
-    display.setCursor(34, 36);
+    display.setCursor(50, 36);
     display.print(r.airTempC);
     // bar_pA_level
-    display.setCursor(11, 44);
+    display.setCursor(27, 44);
     display.print("hPa:");
     // bar_hpa_value
-    display.setCursor(34, 44);
+    display.setCursor(50, 44);
     display.print(r.pressureHpa);
     // bar_hum_level
-    display.setCursor(23, 52);
+    display.setCursor(39, 52);
     display.print("H:");
     // bar_hum_value
-    display.setCursor(35, 52);
+    display.setCursor(51, 52);
     display.print(r.airHumidity);
     // gps_long
-    display.setCursor(67, 38);
+    display.setCursor(94, 38);
     display.print("long:");
     // gps_lat
-    display.setCursor(67, 50);
+    display.setCursor(94, 50);
     display.print("lat:");
     display.display();
 }
