@@ -8,6 +8,8 @@ struct SensorReading {
   float dissolvedO2;     // mg/L
   float waterTempC;
   float pressureHpa;     // BME280
+  float airTempC;
+  float airHumidity;
   double latitude;       // GPS
   double longitude;
   bool gpsFix;

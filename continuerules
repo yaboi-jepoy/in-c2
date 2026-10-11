@@ -1,0 +1,102 @@
+# Project context: in-c2 (ESP32 water quality firmware)
+
+## What this is
+A capstone project. Firmware for an ESP32 (38-pin dev board, CP2102 USB chip) built with PlatformIO on the Arduino-ESP32 framework. It reads water quality sensors, formats the data, and sends it to a cloud database over WiFi, with an SSD1306 OLED display showing live values.
+
+The user is learning firmware architecture. Explain reasoning when it matters, and keep answers at the level of a student who is new to FreeRTOS and to multi-file C/C++ projects.
+
+## Hardware
+- ESP32 dev board (38-pin), CP2102 USB-serial
+- DFRobot Analog pH Sensor v2 (analog, read through ADC; ADS1115 planned)
+- DFRobot Analog Dissolved Oxygen Sensor (analog)
+- DS18B20 waterproof temperature sensor with module (1-Wire)
+- BME280 barometer (I2C)
+- GY-GPS6MV2 GPS module (UART)
+- SSD1306 128x64 OLED (I2C, address 0x3C; try 0x3D if blank)
+- ADS1115 ADC (I2C), on loan from a classmate, not yet returned
+- I2C bus: SDA = GPIO 21, SCL = GPIO 22, shared by OLED, BME280, and ADS1115
+
+Current status: sensor drivers are stubs that return fixed values. Real sensing is not implemented yet. The OLED driver is implemented with Adafruit GFX and Adafruit SSD1306.
+
+## Architecture (follow this strictly)
+FreeRTOS tasks communicate only through queues. No task reads another task's variables.
+
+```
+SensorTask --(rawQueue)--> FormatTask --(cloudQueue)--> CloudTask
+                                |
+                                +--(latestQueue, length 1)--> DisplayTask
+```
+
+Tasks and priorities:
+- sensing: priority 3, core 1, stack 4096
+- format: priority 2, core 1, stack 4096
+- cloud: priority 1, core 0 (WiFi lives on core 0), stack 8192
+- display: priority 1, core 1, stack 4096
+
+Timing uses vTaskDelay / vTaskDelayUntil with pdMS_TO_TICKS. Never use Arduino delay() inside a task.
+
+## File layout
+```
+src/
+  main.cpp              startup only: Wire.begin, sensorsInit, oledInit, queues, tasks
+  config.h              pins, periods, stack sizes, queue lengths, display constants
+  types.h               SensorReading, FormattedRecord (no code, plain structs)
+  queues.h              extern declarations for rawQueue, cloudQueue, latestQueue
+  sensors/
+    sensor_manager.h/.cpp   sensorsInit(), sensorsRead(SensorReading&)
+    ph.h/.cpp               phInit(), phRead()
+    dissolved_oxygen.h/.cpp
+    temperature.h/.cpp
+    barometer.h/.cpp
+    gps.h/.cpp
+  tasks/                tasks only: timing and queue logic, no hardware calls
+    sensing_task.cpp, format_task.cpp, cloud_task.cpp, display_task.cpp
+  comms/wifi_cloud.h/.cpp
+  display/oled.h/.cpp   the only file that includes Adafruit headers
+```
+
+## Rules for code in this project
+1. Every .h starts with `#pragma once`.
+2. Every .cpp includes its own header first.
+3. Headers hold declarations only. Put function bodies in .cpp. Exception: tiny inline functions and constants.
+4. File-private helpers and constants are `static` and do not appear in headers.
+5. Global variables are declared `extern` in queues.h and defined exactly once, in main.cpp. Do not add other globals shared across files.
+6. Dependencies point one way: types.h <- sensors/*.h <- sensor_manager.h <- tasks/, comms/, display/ <- main.cpp. Lower layers never include higher ones. Tasks never include individual sensor drivers; they call sensor_manager.
+7. Only oled.cpp includes Adafruit headers. Only wifi_cloud.cpp includes WiFi headers. Only sensor drivers touch sensor hardware.
+8. Only main.cpp calls Wire.begin(). Other files assume the bus is already running.
+9. Stub functions return fixed placeholder values until real code is added. Keep function names and return types identical when replacing a stub.
+10. Keep formatAsJson() as a pure function (no hardware or RTOS calls) so it can be tested off-device.
+
+## Coding style
+- C++ for ESP32 Arduino framework. Use `Serial` for debug output at 115200 baud.
+- Use fixed-size buffers (char arrays) in queue payloads. Avoid String and heap allocation inside tasks.
+- Use `float` for sensor values. Units go in comments, e.g. `// mg/L`.
+- Use `QueueHandle_t` for queues and `TaskHandle_t` when a handle is needed.
+- Use `xQueueSend(..., 0)` for producers that must not block (log drops), and `portMAX_DELAY` for consumers that should wait.
+- Keep `main.cpp` short. If it grows, move logic into a module.
+
+## Common mistakes to flag
+- Defining a queue inside setup() (it becomes local and other files can't link to it).
+- Using `static` on a queue definition in main.cpp (hides it from other files).
+- Forgetting `#pragma once` or including a .cpp file.
+- Calling delay() inside a task.
+- Starting Wire more than once or from a driver.
+- Putting function bodies in a header, which causes multiple-definition errors.
+- Undersized task stacks causing random crashes (use uxTaskGetStackHighWaterMark to check).
+- xQueuePeek on latestQueue before anything was sent: it blocks until data arrives.
+
+## Build
+- Tool: PlatformIO, environment `esp32dev`, upload port COM5.
+- Libraries (platformio.ini lib_deps): adafruit/Adafruit GFX Library, adafruit/Adafruit SSD1306.
+- Build output: .pio/build/esp32dev/firmware.elf.
+- Board has EN and IO0 buttons for flashing.
+
+## Project context
+This is a water quality monitoring system for Laguna Lake, meant for algal bloom forecasting by combining in-situ readings with satellite data. A parallel design-report track (paper only) compares three deployment alternatives: Moored Buoy, Fixed/Stationary, and Pump-based Station. Firmware transport may change from WiFi to LoRa, which is why the cloud transmission task is kept isolated in comms/. When suggesting changes to the transmission layer, keep that in mind.
+
+## How to respond
+- When asked to write code, follow the file layout and rules above. Show the header and the .cpp separately, with the file path as a heading.
+- When explaining, relate it to the architecture above rather than general theory.
+- Prefer small, testable steps. Suggest a build check after each change.
+- If a request would break the layering rules, say so and propose where the code should go instead.
+- Do not add libraries or frameworks without asking.
