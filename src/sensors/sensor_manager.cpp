@@ -2,11 +2,17 @@
 #include <Arduino.h>
 #include "ph.h"
 #include "barometer.h"
+#include "dissolved_oxygen.h"
+#include "temperature.h"
 
 void sensorsInit() {
     phInit();
+    dissolvedOxygenInit();
     if (!barometerInit()) {
         Serial.println("Barometer not found. Check wiring and address.");
+    }
+    if (!temperatureInit()) {
+        Serial.println("DS18B20 not found. Check wiring and pull-up resistor.");
     }
 }
 
@@ -14,9 +20,13 @@ void sensorsInit() {
 void sensorsRead(SensorReading& reading) {
     reading.timestampMs = millis();
     reading.ph = phRead();
-    reading.dissolvedO2 = 6.5f;
-    reading.waterTempC = 28.0f;
-
+    
+    if (!temperatureRead(reading.waterTempC)) {
+        Serial.println("DS18B20 read failed");
+    }
+    
+    reading.dissolvedO2 = dissolvedOxygenRead(reading.waterTempC);
+    
     //
     if (!barometerRead(reading.airTempC, reading.pressureHpa, reading.airHumidity)) {
         Serial.println("BME280 read failed");

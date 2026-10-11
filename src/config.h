@@ -14,3 +14,8 @@
 #define SCREEN_HEIGHT   64
 #define OLED_ADDR       0x3C    // NOT 0x3D
 #define OLED_RESET      -1      // no reset pin
+
+// sensor pins
+#define PH_PIN    34
+#define DO_PIN    35
+#define DS18B20_PIN 4

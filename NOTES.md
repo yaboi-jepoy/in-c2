@@ -33,4 +33,10 @@ _by tnznt_
 
 ## Essential GPIO Pinout
 
+| PIN    | Component |
+| ------ | --------- |
+| GPIO4  | DS18B20   |
+| GPIO34 | Analog pH |
+| GPIO35 | Analog DO |
+
 ## Hardware Notes
