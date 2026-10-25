@@ -36,7 +36,12 @@ _by tnznt_
 | PIN    | Component |
 | ------ | --------- |
 | GPIO4  | DS18B20   |
-| GPIO34 | Analog pH |
-| GPIO35 | Analog DO |
+| ADS1115 A0 | pH sensor analog output |
+| ADS1115 A1 | DO sensor analog output |
+| GPIO17 | GPS module TX -> ESP32 RX |
+| GPIO16 | GPS module RX <- ESP32 TX |
 
 ## Hardware Notes
+
+The GPS module uses UART1 at 9600 baud. Its TX wire connects to ESP32 GPIO17
+(RX), and its RX wire connects to GPIO16 (TX).

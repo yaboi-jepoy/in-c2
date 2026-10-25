@@ -4,10 +4,14 @@
 #include "barometer.h"
 #include "dissolved_oxygen.h"
 #include "temperature.h"
+#include "gps.h"
+#include "ads1115.h"
 
 void sensorsInit() {
+    ads1115Init();
     phInit();
     dissolvedOxygenInit();
+    gpsInit();
     if (!barometerInit()) {
         Serial.println("Barometer not found. Check wiring and address.");
     }
@@ -18,26 +22,35 @@ void sensorsInit() {
 
 // temporarily assigns values to the "reading" variable
 void sensorsRead(SensorReading& reading) {
+    static bool waterTemperatureErrorReported = false;
+    static bool barometerErrorReported = false;
     reading.timestampMs = millis();
     reading.ph = phRead();
     
     if (!temperatureRead(reading.waterTempC)) {
-        Serial.println("DS18B20 read failed");
+        if (!waterTemperatureErrorReported) {
+            Serial.println("error: DS18B20 read failed");
+            waterTemperatureErrorReported = true;
+        }
+    } else {
+        waterTemperatureErrorReported = false;
     }
     
     reading.dissolvedO2 = dissolvedOxygenRead(reading.waterTempC);
     
     //
     if (!barometerRead(reading.airTempC, reading.pressureHpa, reading.airHumidity)) {
-        Serial.println("BME280 read failed");
+        if (!barometerErrorReported) {
+            Serial.println("error: BME280 read failed");
+            barometerErrorReported = true;
+        }
+    } else {
+        barometerErrorReported = false;
     }
 
     // reading.pressureHpa = 1012.0f;
     // reading.airTempC = 29.0f;
     // reading.airHumidity = 75.0f;
 
-    // GPS
-    reading.latitude = 14.5995;
-    reading.longitude = 120.9842;
-    reading.gpsFix = true;
+    gpsRead(reading.latitude, reading.longitude, reading.gpsFix);
 }

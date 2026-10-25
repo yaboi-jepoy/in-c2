@@ -1,7 +1,7 @@
 #include "ph.h"
 #include <Arduino.h>
-
-static const int PH_PIN = 34;   // ADC1, input only
+#include "ads1115.h"
+#include "config.h"
 
 // ---- Calibration: fill these in from YOUR two-point calibration ----
 // mV reading in the pH 7.0 buffer, and in the pH 4.0 buffer.
@@ -10,18 +10,23 @@ static const float V_PH7_MV = 1570.0f;
 static const float V_PH4_MV = 2112.0f;
 
 void phInit() {
-  analogSetPinAttenuation(PH_PIN, ADC_11db);   // read up to ~3.3V
+  float mV = 0.0f;
+  if (ads1115ReadMilliVolts(PH_ADC_CHANNEL, mV)) {
+    Serial.printf("setup: pH %.0f mV\n", mV);
+  }
 }
 
 float phRead() {
-  uint32_t sum = 0;
-  for (int i = 0; i < 16; i++) {
-    sum += analogReadMilliVolts(PH_PIN);
+  static bool errorReported = false;
+  float mV = 0.0f;
+  if (!ads1115ReadMilliVolts(PH_ADC_CHANNEL, mV)) {
+    if (!errorReported) {
+      Serial.println("error: pH ADS1115 read failed");
+      errorReported = true;
+    }
+    return 0.0f;
   }
-  float mV = sum / 16.0f;
-
-  // for calibration: keep this until the constants are set
-  Serial.printf("pH mV: %.0f\n", mV);
+  errorReported = false;
 
   if (V_PH7_MV == 0.0f || V_PH4_MV == 0.0f || V_PH7_MV == V_PH4_MV) {
     return 0.0f;   // not calibrated yet

@@ -230,6 +230,7 @@ For stack trouble, check `uxTaskGetStackHighWaterMark(NULL)` inside a task. It r
 - **TFT blank:** Check 3.3 V power, common ground, CS/DC/RST, and the VSPI pins in `config.h`.
 - **TFT orientation:** `setRotation(1)` selects landscape mode (320 x 240). Change it to `0` for portrait mode.
 - **I2C sharing:** The BME280 uses SDA GPIO21 and SCL GPIO22. The TFT is SPI and does not use the I2C bus.
+- **ADS1115 inputs:** Connect the pH sensor output to A0 and the DO sensor output to A1. Connect ADS1115 VDD to 3.3 V, GND to ground, and leave its address at `0x48` unless `ADS1115_ADDRESS` is changed in `config.h`.
 - **Sensor reads 0 or -127:** Check wiring first. The DS18B20 returns -127 when it isn't detected.
 
 ---
@@ -263,3 +264,22 @@ For stack trouble, check `uxTaskGetStackHighWaterMark(NULL)` inside a task. It r
 | I2C | Two-wire bus used by the BME280 and other I2C sensors |
 | SPI | Serial bus used by the ILI9341 TFT |
 | ADC | Converts an analog voltage into a number |
+
+## Wi-Fi, Firebase, and Offline Backup
+
+Set the Wi-Fi and Firebase values in the local `.env` file before uploading.
+The Firebase client uses anonymous authentication, so enable **Anonymous**
+under Firebase Authentication and configure the Realtime Database URL in the
+Firebase console. `CONFIGURATION_NOT_FOUND` during sign-up usually means
+Anonymous Authentication is disabled or the API key belongs to a different
+Firebase project than the database URL.
+
+Records are pushed to the `/readings` path. When Wi-Fi is unavailable, the
+latest JSON record is saved to `/backup.log` in the ESP32's LittleFS flash
+filesystem. Firebase errors while Wi-Fi is still connected are reported but
+are not written to the offline backup. The cloud task retries the saved record
+after connectivity is restored.
+
+Sensor readings are sampled every 2 seconds. The cloud task uploads the latest
+available reading every 10 seconds; readings collected between uploads replace
+the older pending reading instead of building an upload queue.

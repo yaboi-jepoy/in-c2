@@ -1,7 +1,7 @@
 #include "dissolved_oxygen.h"
 #include <Arduino.h>
-
-static const int DO_PIN = 35;   // ADC1, input only
+#include "ads1115.h"
+#include "config.h"
 
 // ---- Calibration: fill these in from YOUR air calibration ----
 // Voltage (mV) in air-saturated water at the calibration temperature.
@@ -13,7 +13,10 @@ static const float T_TABLE[]  = {0, 5, 10, 15, 20, 25, 30, 35, 40};
 static const float DO_TABLE[] = {14.62, 12.77, 11.29, 10.08, 9.09, 8.26, 7.56, 6.95, 6.41};
 
 void dissolvedOxygenInit() {
-  analogSetPinAttenuation(DO_PIN, ADC_11db);   // read up to ~3.3V
+  float mV = 0.0f;
+  if (ads1115ReadMilliVolts(DO_ADC_CHANNEL, mV)) {
+    Serial.printf("setup: DO %.0f mV\n", mV);
+  }
 }
 
 // Pure helper: interpolate the saturation value for a temperature
@@ -32,14 +35,16 @@ static float doSaturationMgL(float tempC) {
 }
 
 float dissolvedOxygenRead(float waterTempC) {
-  uint32_t sum = 0;
-  for (int i = 0; i < 16; i++) {
-    sum += analogReadMilliVolts(DO_PIN);
+  static bool errorReported = false;
+  float mV = 0.0f;
+  if (!ads1115ReadMilliVolts(DO_ADC_CHANNEL, mV)) {
+    if (!errorReported) {
+      Serial.println("error: DO ADS1115 read failed");
+      errorReported = true;
+    }
+    return 0.0f;
   }
-  float mV = sum / 16.0f;
-
-  // for calibration: keep this until V_SAT_MV is set
-  Serial.printf("DO mV: %.0f\n", mV);
+  errorReported = false;
 
   if (V_SAT_MV <= 0.0f) return 0.0f;   // not calibrated yet
   return (mV / V_SAT_MV) * doSaturationMgL(waterTempC);

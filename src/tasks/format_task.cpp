@@ -19,8 +19,8 @@ void formatTask(void* arg) {
         }
 
         if (formatAsJson(reading, record)) {
-            if (xQueueSend(cloudQueue, &record, 0) != pdTRUE) {
-                Serial.println("format: cloudQueue full, dropping record.");
+            if (xQueueOverwrite(cloudQueue, &record) != pdTRUE) {
+                Serial.println("format: unable to replace latest cloud record.");
             }
         } else {
             Serial.println("format: record too long, dropping.");
