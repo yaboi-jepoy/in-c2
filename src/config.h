@@ -5,15 +5,18 @@
 #define RAW_QUEUE_LEN       3
 #define CLOUD_QUEUE_LEN     20
 
-// these pins will be shared by SSD1306, BME280, AND ADS1115 LATER
+// These pins are shared by the I2C sensors.
 #define I2C_SDA 21
 #define I2C_SCL 22
 
-// SSD1306 display variables
-#define SCREEN_WIDTH    128
-#define SCREEN_HEIGHT   64
-#define OLED_ADDR       0x3C    // NOT 0x3D
-#define OLED_RESET      -1      // no reset pin
+// ILI9341 SPI display pins.
+// VSPI hardware pins: SCK=18, MISO=19, MOSI=23.
+#define TFT_SCK 18
+#define TFT_MISO 19
+#define TFT_MOSI 23
+#define TFT_CS  27
+#define TFT_DC  26
+#define TFT_RST 25
 
 // sensor pins
 #define PH_PIN    34

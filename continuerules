@@ -1,7 +1,7 @@
 # Project context: in-c2 (ESP32 water quality firmware)
 
 ## What this is
-A capstone project. Firmware for an ESP32 (38-pin dev board, CP2102 USB chip) built with PlatformIO on the Arduino-ESP32 framework. It reads water quality sensors, formats the data, and sends it to a cloud database over WiFi, with an SSD1306 OLED display showing live values.
+A capstone project. Firmware for an ESP32 (38-pin dev board, CP2102 USB chip) built with PlatformIO on the Arduino-ESP32 framework. It reads water quality sensors, formats the data, and sends it to a cloud database over WiFi, with an ILI9341 TFT display showing live values.
 
 The user is learning firmware architecture. Explain reasoning when it matters, and keep answers at the level of a student who is new to FreeRTOS and to multi-file C/C++ projects.
 
@@ -12,11 +12,12 @@ The user is learning firmware architecture. Explain reasoning when it matters, a
 - DS18B20 waterproof temperature sensor with module (1-Wire)
 - BME280 barometer (I2C)
 - GY-GPS6MV2 GPS module (UART)
-- SSD1306 128x64 OLED (I2C, address 0x3C; try 0x3D if blank)
+- ILI9341 2.4-inch 240x320 TFT (SPI, configured landscape as 320x240)
 - ADS1115 ADC (I2C), on loan from a classmate, not yet returned
-- I2C bus: SDA = GPIO 21, SCL = GPIO 22, shared by OLED, BME280, and ADS1115
+- I2C bus: SDA = GPIO 21, SCL = GPIO 22, shared by BME280 and ADS1115
+- TFT SPI: SCK = GPIO 18, MISO = GPIO 19, MOSI = GPIO 23, CS = GPIO 27, DC = GPIO 26, RST = GPIO 25
 
-Current status: sensor drivers are stubs that return fixed values. Real sensing is not implemented yet. The OLED driver is implemented with Adafruit GFX and Adafruit SSD1306.
+Current status: sensor drivers are stubs that return fixed values. Real sensing is not implemented yet. The TFT driver is implemented with Adafruit GFX and Adafruit ILI9341.
 
 ## Architecture (follow this strictly)
 FreeRTOS tasks communicate only through queues. No task reads another task's variables.
@@ -38,7 +39,7 @@ Timing uses vTaskDelay / vTaskDelayUntil with pdMS_TO_TICKS. Never use Arduino d
 ## File layout
 ```
 src/
-  main.cpp              startup only: Wire.begin, sensorsInit, oledInit, queues, tasks
+  main.cpp              startup only: Wire.begin, sensorsInit, tftInit, queues, tasks
   config.h              pins, periods, stack sizes, queue lengths, display constants
   types.h               SensorReading, FormattedRecord (no code, plain structs)
   queues.h              extern declarations for rawQueue, cloudQueue, latestQueue
@@ -52,7 +53,7 @@ src/
   tasks/                tasks only: timing and queue logic, no hardware calls
     sensing_task.cpp, format_task.cpp, cloud_task.cpp, display_task.cpp
   comms/wifi_cloud.h/.cpp
-  display/oled.h/.cpp   the only file that includes Adafruit headers
+  display/tft.h/.cpp    the only file that includes Adafruit display headers
 ```
 
 ## Rules for code in this project
@@ -62,7 +63,7 @@ src/
 4. File-private helpers and constants are `static` and do not appear in headers.
 5. Global variables are declared `extern` in queues.h and defined exactly once, in main.cpp. Do not add other globals shared across files.
 6. Dependencies point one way: types.h <- sensors/*.h <- sensor_manager.h <- tasks/, comms/, display/ <- main.cpp. Lower layers never include higher ones. Tasks never include individual sensor drivers; they call sensor_manager.
-7. Only oled.cpp includes Adafruit headers. Only wifi_cloud.cpp includes WiFi headers. Only sensor drivers touch sensor hardware.
+7. Only tft.cpp includes Adafruit display headers. Only wifi_cloud.cpp includes WiFi headers. Only sensor drivers touch sensor hardware.
 8. Only main.cpp calls Wire.begin(). Other files assume the bus is already running.
 9. Stub functions return fixed placeholder values until real code is added. Keep function names and return types identical when replacing a stub.
 10. Keep formatAsJson() as a pure function (no hardware or RTOS calls) so it can be tested off-device.
@@ -87,7 +88,7 @@ src/
 
 ## Build
 - Tool: PlatformIO, environment `esp32dev`, upload port COM5.
-- Libraries (platformio.ini lib_deps): adafruit/Adafruit GFX Library, adafruit/Adafruit SSD1306.
+- Libraries (platformio.ini lib_deps): adafruit/Adafruit ILI9341 (which depends on Adafruit GFX), plus the sensor libraries.
 - Build output: .pio/build/esp32dev/firmware.elf.
 - Board has EN and IO0 buttons for flashing.
 

@@ -3,7 +3,7 @@
 #include "config.h"
 #include "types.h"
 #include "sensors/sensor_manager.h"
-#include "display/oled.h"
+#include "display/tft.h"
 
 QueueHandle_t rawQueue;
 QueueHandle_t cloudQueue;
@@ -33,9 +33,7 @@ void setup() {
     sensorsInit();
 
     // init display
-    if (!oledInit()) {
-        Serial.println("Screen not found. Check wiring and address.");
-    }
+    tftInit();
 
     rawQueue    = xQueueCreate(RAW_QUEUE_LEN,  sizeof(SensorReading));
     cloudQueue  = xQueueCreate(CLOUD_QUEUE_LEN, sizeof(FormattedRecord));

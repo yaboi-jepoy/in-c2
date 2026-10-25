@@ -13,7 +13,7 @@ The firmware does five jobs at the same time:
 | Sensing | `tasks/sensing_task.cpp` + `sensors/` | Reads every sensor on a fixed timer |
 | Formatting | `tasks/format_task.cpp` | Turns raw numbers into timestamped records |
 | Cloud | `tasks/cloud_task.cpp` + `comms/` | Sends records over WiFi |
-| Display | `tasks/display_task.cpp` + `display/` | Draws the latest values on the OLED |
+| Display | `tasks/display_task.cpp` + `display/` | Draws the latest values on the ILI9341 TFT |
 | Startup | `main.cpp` | Starts the bus, the hardware, the queues, and the tasks |
 
 The jobs run in parallel under **FreeRTOS**, the real-time scheduler built into the ESP32. Each job is a *task*: a function with an infinite loop that does its work and then waits.
@@ -147,8 +147,8 @@ src/
   comms/                    WiFi and cloud details
     wifi_cloud.h/.cpp
 
-  display/                  SSD1306 details
-    oled.h/.cpp
+  display/                  ILI9341 TFT details
+    tft.h/.cpp
 ```
 
 ### The dependency rule
@@ -227,8 +227,9 @@ For stack trouble, check `uxTaskGetStackHighWaterMark(NULL)` inside a task. It r
 
 ### Hardware checks
 
-- **OLED blank:** Try address `0x3D` instead of `0x3C`. Check SDA and SCL pins match `config.h`.
-- **I2C sharing:** The OLED, BME280, and ADS1115 all use one bus. Only start it once, in `main.cpp`.
+- **TFT blank:** Check 3.3 V power, common ground, CS/DC/RST, and the VSPI pins in `config.h`.
+- **TFT orientation:** `setRotation(1)` selects landscape mode (320 x 240). Change it to `0` for portrait mode.
+- **I2C sharing:** The BME280 uses SDA GPIO21 and SCL GPIO22. The TFT is SPI and does not use the I2C bus.
 - **Sensor reads 0 or -127:** Check wiring first. The DS18B20 returns -127 when it isn't detected.
 
 ---
@@ -259,5 +260,6 @@ For stack trouble, check `uxTaskGetStackHighWaterMark(NULL)` inside a task. It r
 | `extern` | Promise that a variable is defined in another file |
 | `static` | Limits a name to the file it's in |
 | `#pragma once` | Prevents a header being included twice |
-| I2C | Two-wire bus shared by the display and several sensors |
+| I2C | Two-wire bus used by the BME280 and other I2C sensors |
+| SPI | Serial bus used by the ILI9341 TFT |
 | ADC | Converts an analog voltage into a number |
