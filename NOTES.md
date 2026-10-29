@@ -38,10 +38,18 @@ _by tnznt_
 | GPIO4  | DS18B20   |
 | ADS1115 A0 | pH sensor analog output |
 | ADS1115 A1 | DO sensor analog output |
-| GPIO17 | GPS module TX -> ESP32 RX |
-| GPIO16 | GPS module RX <- ESP32 TX |
+| GPIO16 | GPS module TX -> ESP32 RX |
+| GPIO17 | GPS module RX <- ESP32 TX |
+| GPIO5  | TFT CS |
+| GPIO27 | TFT DC |
+| GPIO26 | TFT RST |
+| GPIO13 | ULN2003 IN1 |
+| GPIO14 | ULN2003 IN2 |
+| GPIO25 | ULN2003 IN3 |
+| GPIO33 | ULN2003 IN4 |
+| GPIO32 | Sampling pushbutton |
 
 ## Hardware Notes
 
-The GPS module uses UART1 at 9600 baud. Its TX wire connects to ESP32 GPIO17
-(RX), and its RX wire connects to GPIO16 (TX).
+The GPS module uses UART2 at 9600 baud. Its TX wire connects to ESP32 GPIO16
+(RX), and its RX wire connects to GPIO17 (TX).

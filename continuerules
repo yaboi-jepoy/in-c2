@@ -15,7 +15,7 @@ The user is learning firmware architecture. Explain reasoning when it matters, a
 - ILI9341 2.4-inch 240x320 TFT (SPI, configured landscape as 320x240)
 - ADS1115 ADC (I2C), on loan from a classmate, not yet returned
 - I2C bus: SDA = GPIO 21, SCL = GPIO 22, shared by BME280 and ADS1115
-- TFT SPI: SCK = GPIO 18, MISO = GPIO 19, MOSI = GPIO 23, CS = GPIO 27, DC = GPIO 26, RST = GPIO 25
+- TFT SPI: SCK = GPIO 18, MISO = GPIO 19, MOSI = GPIO 23, CS = GPIO 5, DC = GPIO 27, RST = GPIO 26
 
 Current status: sensor drivers are stubs that return fixed values. Real sensing is not implemented yet. The TFT driver is implemented with Adafruit GFX and Adafruit ILI9341.
 

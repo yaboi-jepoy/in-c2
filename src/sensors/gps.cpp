@@ -6,7 +6,7 @@
 
 namespace {
 TinyGPSPlus gps;
-HardwareSerial gpsSerial(1);
+HardwareSerial gpsSerial(2);
 constexpr double HARDCODED_LATITUDE = 14.73004;
 constexpr double HARDCODED_LONGITUDE = 121.02031;
 }

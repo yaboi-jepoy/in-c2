@@ -70,7 +70,7 @@ bool tftInit() {
     Serial.println("TFT: configuring VSPI");
     // -1 for SS: chip select is driven manually by the Adafruit library.
     // Passing TFT_CS here makes the ESP32 core also try to control it.
-    SPI.begin(TFT_SCK, TFT_MISO, TFT_MOSI, -1);
+    SPI.begin(TFT_SCK, -1, TFT_MOSI, -1);
 
     // The library resets the panel itself through TFT_RST, but a slow
     // power-up on jumper wires sometimes needs this extra pulse.
