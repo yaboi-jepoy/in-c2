@@ -23,7 +23,7 @@ void cloudTask(void* arg) {
             Serial.println("error: offline and backup failed");
           }
         } else {
-          Serial.println("error: Firebase upload failed while Wi-Fi is connected");
+          Serial.println("error: Firestore upload failed while Wi-Fi is connected");
         }
       }
     }

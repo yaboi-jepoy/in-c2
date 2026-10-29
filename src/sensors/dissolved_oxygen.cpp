@@ -3,9 +3,9 @@
 #include "ads1115.h"
 #include "config.h"
 
-// ---- Calibration: fill these in from YOUR air calibration ----
-// Voltage (mV) in air-saturated water at the calibration temperature.
-// Leave at 0 until you've measured it. 0 means "not calibrated yet".
+// ---- Temporary provisional calibration ----
+// Approximate voltage reference used while air-saturated calibration water is
+// unavailable. Replace it after an air-saturation calibration.
 static const float V_SAT_MV = 1684.0f;
 
 // Saturation DO (mg/L) in fresh water at 1 atm, every 5 °C from 0 to 40 °C

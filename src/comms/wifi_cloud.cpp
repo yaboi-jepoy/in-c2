@@ -1,6 +1,6 @@
 #include "wifi_cloud.h"
 #include <Arduino.h>
-#include <FirebaseESP32.h>
+#include <Firebase_ESP_Client.h>
 #include <LittleFS.h>
 #include <WiFi.h>
 #include <time.h>
@@ -66,13 +66,59 @@ bool uploadJson(const char* jsonText) {
     return false;
   }
 
-  FirebaseJson json;
-  if (!json.setJsonData(jsonText)) {
+  FirebaseJson source;
+  if (!source.setJsonData(jsonText)) {
     Serial.println("cloud: invalid JSON record");
     return false;
   }
 
-  if (!Firebase.pushJSON(firebaseData, "/readings", json)) {
+  FirebaseJson document;
+  FirebaseJsonData value;
+
+  if (!source.get(value, "deviceId") || !value.success) {
+    Serial.println("cloud: record is missing deviceId");
+    return false;
+  }
+  document.set("fields/deviceId/stringValue", value.stringValue);
+
+  if (!source.get(value, "source") || !value.success) {
+    Serial.println("cloud: record is missing source");
+    return false;
+  }
+  document.set("fields/source/stringValue", value.stringValue);
+
+  const char* numericFields[] = {
+      "waterTemperature", "ph", "dissolvedOxygen", "airTemperature",
+      "humidity", "pressure"};
+  for (const char* field : numericFields) {
+    if (!source.get(value, field) || !value.success) {
+      Serial.printf("cloud: record is missing %s\n", field);
+      return false;
+    }
+    document.set(String("fields/") + field + "/doubleValue", value.doubleValue);
+  }
+
+  const char* locationFields[] = {"latitude", "longitude"};
+  for (const char* field : locationFields) {
+    if (!source.get(value, field) || !value.success) {
+      Serial.printf("cloud: record is missing %s\n", field);
+      return false;
+    }
+    if (value.type == "null") {
+      document.set(String("fields/") + field + "/nullValue", "NULL_VALUE");
+    } else {
+      document.set(String("fields/") + field + "/doubleValue", value.doubleValue);
+    }
+  }
+
+  if (!source.get(value, "measuredAt") || !value.success) {
+    Serial.println("cloud: record is missing measuredAt");
+    return false;
+  }
+  document.set("fields/measuredAt/timestampValue", value.stringValue);
+
+  if (!Firebase.Firestore.createDocument(&firebaseData, FIREBASE_PROJECT_ID, "",
+                                         "sensor_readings", document.raw())) {
     Serial.printf("cloud: upload failed: %s\n", firebaseData.errorReason().c_str());
     return false;
   }
@@ -101,7 +147,6 @@ void cloudInit() {
   }
 
   firebaseConfig.api_key = FIREBASE_API_KEY;
-  firebaseConfig.database_url = FIREBASE_DATABASE_URL;
   Firebase.begin(&firebaseConfig, &firebaseAuth);
   Firebase.reconnectWiFi(true);
   Serial.println("cloud: Wi-Fi connection started");

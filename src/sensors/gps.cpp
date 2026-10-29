@@ -7,6 +7,8 @@
 namespace {
 TinyGPSPlus gps;
 HardwareSerial gpsSerial(1);
+constexpr double HARDCODED_LATITUDE = 14.73004;
+constexpr double HARDCODED_LONGITUDE = 121.02031;
 }
 
 void gpsInit() {
@@ -18,16 +20,8 @@ void gpsInit() {
 }
 
 void gpsRead(double& latitude, double& longitude, bool& fix) {
-    while (gpsSerial.available() > 0) {
-        gps.encode(static_cast<char>(gpsSerial.read()));
-    }
-
-    fix = gps.location.isValid() && gps.location.age() < 10000;
-    if (fix) {
-        latitude = gps.location.lat();
-        longitude = gps.location.lng();
-    } else {
-        latitude = 0.0;
-        longitude = 0.0;
-    }
+    // Temporary fixed location until live GPS reading is re-enabled.
+    latitude = HARDCODED_LATITUDE;
+    longitude = HARDCODED_LONGITUDE;
+    fix = true;
 }

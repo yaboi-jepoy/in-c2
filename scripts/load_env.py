@@ -33,7 +33,7 @@ required = (
     "WIFI_SSID",
     "WIFI_PASSWORD",
     "FIREBASE_API_KEY",
-    "FIREBASE_DATABASE_URL",
+    "FIREBASE_PROJECT_ID",
     "DEVICE_ID",
 )
 missing = [key for key in required if not dotenv.get(key)]

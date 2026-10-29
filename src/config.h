@@ -42,8 +42,8 @@
 #ifndef FIREBASE_API_KEY
 #define FIREBASE_API_KEY "YOUR_FIREBASE_API_KEY"
 #endif
-#ifndef FIREBASE_DATABASE_URL
-#define FIREBASE_DATABASE_URL "https://YOUR_PROJECT-default-rtdb.firebaseio.com/"
+#ifndef FIREBASE_PROJECT_ID
+#define FIREBASE_PROJECT_ID "YOUR_FIREBASE_PROJECT_ID"
 #endif
 #ifndef DEVICE_ID
 #define DEVICE_ID       "prototype-01"

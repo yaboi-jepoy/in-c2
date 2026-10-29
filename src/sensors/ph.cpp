@@ -3,9 +3,9 @@
 #include "ads1115.h"
 #include "config.h"
 
-// ---- Calibration: fill these in from YOUR two-point calibration ----
-// mV reading in the pH 7.0 buffer, and in the pH 4.0 buffer.
-// Leave at 0 until measured. 0 means "not calibrated yet".
+// ---- Temporary provisional calibration ----
+// These values allow approximate readings while proper pH buffer solutions
+// are unavailable. Replace them after a two-point calibration.
 static const float V_PH7_MV = 1570.0f;
 static const float V_PH4_MV = 2112.0f;
 

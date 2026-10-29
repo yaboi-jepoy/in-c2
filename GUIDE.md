@@ -268,17 +268,20 @@ For stack trouble, check `uxTaskGetStackHighWaterMark(NULL)` inside a task. It r
 ## Wi-Fi, Firebase, and Offline Backup
 
 Set the Wi-Fi and Firebase values in the local `.env` file before uploading.
-The Firebase client uses anonymous authentication, so enable **Anonymous**
-under Firebase Authentication and configure the Realtime Database URL in the
-Firebase console. `CONFIGURATION_NOT_FOUND` during sign-up usually means
-Anonymous Authentication is disabled or the API key belongs to a different
-Firebase project than the database URL.
+Use the Firebase project ID (the portion before `.firebaseio.com` in older
+Realtime Database URLs), not a Realtime Database URL. The Firebase client uses
+anonymous authentication, so enable **Anonymous** under Firebase
+Authentication and enable Cloud Firestore in the Firebase console.
+`CONFIGURATION_NOT_FOUND` during sign-up usually means Anonymous Authentication
+is disabled or the API key belongs to a different Firebase project.
 
-Records are pushed to the `/readings` path. When Wi-Fi is unavailable, the
-latest JSON record is saved to `/backup.log` in the ESP32's LittleFS flash
-filesystem. Firebase errors while Wi-Fi is still connected are reported but
-are not written to the offline backup. The cloud task retries the saved record
-after connectivity is restored.
+Records are created as documents with auto-generated IDs in the `sensor_readings`
+collection. Firestore security rules must allow the authenticated device to
+create documents in that collection. When Wi-Fi is unavailable, the latest
+JSON record is saved to `/backup.log` in the ESP32's LittleFS flash filesystem.
+Firestore errors while Wi-Fi is still connected are reported but are not
+written to the offline backup. The cloud task retries the saved record after
+connectivity is restored.
 
 Sensor readings are sampled every 2 seconds. The cloud task uploads the latest
 available reading every 10 seconds; readings collected between uploads replace
