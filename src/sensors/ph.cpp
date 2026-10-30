@@ -6,8 +6,10 @@
 // ---- Temporary provisional calibration ----
 // These values allow approximate readings while proper pH buffer solutions
 // are unavailable. Replace them after a two-point calibration.
-static const float V_PH7_MV = 1570.0f;
-static const float V_PH4_MV = 2112.0f;
+// static const float V_PH7_MV = 1570.0f;
+// static const float V_PH4_MV = 2112.0f;
+static const float V_PH7_MV = 1049.0f;
+static const float V_PH4_MV = 1988.0f;
 
 void phInit() {
   float mV = 0.0f;

@@ -4,6 +4,7 @@
 #include "types.h"
 #include "sensors/sensor_manager.h"
 #include "display/tft.h"
+#include "stepper.h"
 
 QueueHandle_t rawQueue;
 QueueHandle_t cloudQueue;
@@ -31,6 +32,7 @@ void setup() {
 
     // init sensors
     sensorsInit();
+    stepperInit();
 
     // init display
     tftInit();

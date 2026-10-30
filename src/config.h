@@ -1,10 +1,21 @@
 #pragma once
 
 // magic numbers
-#define SAMPLE_PERIOD_MS    2000
 #define RAW_QUEUE_LEN       3
 #define CLOUD_QUEUE_LEN     1
 #define CLOUD_UPLOAD_PERIOD_MS 10000
+#define SENSOR_SAMPLE_INTERVAL_MS 10000
+
+// Sensor-array deployment. A 28BYJ-48 normally takes 4096 half-steps per
+// output-shaft revolution. Measure the actual spool diameter and adjust these
+// values if the array does not travel exactly the requested distance.
+#define SENSOR_DEPTH_MM             250.0f
+#define SPOOL_DIAMETER_MM            25.5f
+#define STEPPER_HALF_STEPS_PER_REV   4096L
+#define STEPPER_DEPLOY_DIRECTION     1
+#define STEPPER_STEP_DELAY_MS        1
+#define SENSOR_AVERAGE_COUNT         5
+#define SENSOR_SETTLE_MS             1000
 
 // These pins are shared by the I2C sensors.
 #define I2C_SDA 21
@@ -35,9 +46,6 @@
 #define STEPPER_IN2 14
 #define STEPPER_IN3 25
 #define STEPPER_IN4 33
-
-// Sampling control input.
-#define SAMPLING_BUTTON_PIN 32
 
 // Network and Firebase values are injected from the local .env file by
 // scripts/load_env.py during the PlatformIO build.

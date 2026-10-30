@@ -47,7 +47,6 @@ _by tnznt_
 | GPIO14 | ULN2003 IN2 |
 | GPIO25 | ULN2003 IN3 |
 | GPIO33 | ULN2003 IN4 |
-| GPIO32 | Sampling pushbutton |
 
 ## Hardware Notes
 

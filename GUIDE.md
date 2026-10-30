@@ -123,6 +123,22 @@ If you forget the definition, you get `undefined reference to 'rawQueue'` at lin
 
 ## 4. Project layout
 
+### Sensor-array deployment
+
+The sensor task automatically starts one complete sensor-array cycle, then
+waits 10 seconds after the array has returned before starting the next cycle.
+The 28BYJ-48 lowers the array by 250 mm, waits for the array to settle, takes
+five readings, averages valid sensor values, and returns the array by the same
+number of motor steps. The averaged record then follows the existing format
+and cloud-upload queues.
+
+The configured 25.5 mm spool and 4096 half-steps per output-shaft revolution
+produce approximately 12,800 steps for the 250 mm deployment. If the motor
+turns in the wrong direction, change `STEPPER_DEPLOY_DIRECTION` in
+`src/config.h` from `1` to `-1`. If travel is inaccurate, calibrate the spool
+diameter or `STEPPER_HALF_STEPS_PER_REV`; the system assumes the array starts
+at its original level and uses symmetric travel rather than a limit switch.
+
 ```
 src/
   main.cpp                  Startup only: bus, hardware, queues, tasks
